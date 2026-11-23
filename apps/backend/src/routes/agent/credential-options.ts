@@ -5,6 +5,7 @@ import { canUseAllowList } from '@/lib/byos/access'
 import { extractAwsAccountId } from '@/lib/byos/account'
 import { cachedAwsAccountAlias } from '@/lib/byos/aws'
 import { publicZeaburProviders } from '@/lib/byos/zeabur-provider-view'
+import { teamMcpServers } from '@/lib/mcp/team-servers'
 import { parseObjectId } from '@/lib/objectid'
 import { ownPersonalCredentialOptions } from '@/lib/personal-credentials/handout'
 import { teamByosBindings } from '@/models'
@@ -68,6 +69,7 @@ export async function getAgentCredentialOptions(
       resendIntegrations: [],
       personalCredentials: [],
       devices: [],
+      mcpServers: [],
       ...emptyConnectorCredentialOptions(),
     }
   const teamObjectId = parseObjectId(teamId, 'teamId')
@@ -260,10 +262,20 @@ export async function getAgentCredentialOptions(
       label: binding.label,
       permission: binding.permission,
     }))
-  const [devices, personalCredentials] = await Promise.all([
+  const [devices, personalCredentials, mcpServerDocs] = await Promise.all([
     resolveDeviceOptions(userId, teamId),
     ownPersonalCredentialOptions(userId, teamId),
+    teamMcpServers()
+      .find({ teamId }, { projection: { name: 1, url: 1 } })
+      .sort({ createdAt: 1 })
+      .toArray()
+      .catch(() => []),
   ])
+  const mcpServers = mcpServerDocs.map((server) => ({
+    id: server._id.toHexString(),
+    name: server.name,
+    url: server.url,
+  }))
 
   return {
     awsRoles,
@@ -289,6 +301,7 @@ export async function getAgentCredentialOptions(
     resendIntegrations,
     personalCredentials,
     devices,
+    mcpServers,
     ...connectorCredentialOptions(doc, userId),
   }
 }

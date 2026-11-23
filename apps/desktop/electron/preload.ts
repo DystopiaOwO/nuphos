@@ -27,6 +27,7 @@ import { vaultApi } from './preload-parts/api-vault'
 import { voiceApi } from './preload-parts/api-voice'
 import { vpsApi } from './preload-parts/api-vps'
 import { webhooksApi } from './preload-parts/api-webhooks'
+import { mcpServersApi } from './preload-parts/api-mcp-servers'
 import { windowSessionApi } from './preload-parts/api-window-session'
 
 const api = {
@@ -56,6 +57,7 @@ const api = {
   ...connectApi,
   ...instructionsApi,
   ...webhooksApi,
+  ...mcpServersApi,
   ...browserExtensionsApi,
   ...vaultApi,
 }

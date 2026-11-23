@@ -92,6 +92,11 @@ export type AgentCredentialOptions = {
     label: string
     contextName: string
   }[]
+  mcpServers: {
+    id: string
+    name: string
+    url: string
+  }[]
   betterStackIntegrations: {
     integrationId: string
     label: string

@@ -28,6 +28,7 @@ import { shellApi } from './api/shell-api.ts'
 import { teamApi } from './api/team-api.ts'
 import { vaultApi } from './api/vault-api.ts'
 import { webhooksApi } from './api/webhooks-api.ts'
+import { mcpServersApi } from './api/mcp-servers-api.ts'
 import { reportFrontendError } from './lib/frontendErrorReporter.ts'
 import { instrumentApi } from './lib/instrumentApi.ts'
 import { withStepUp } from './lib/stepUp.ts'
@@ -56,6 +57,7 @@ import type { WindowShellApi } from './api/window-shell.ts'
 import type { WindowTeamApi } from './api/window-team.ts'
 import type { WindowVaultApi } from './api/window-vault.ts'
 import type { WindowWebhooksApi } from './api/window-webhooks.ts'
+import type { WindowMcpServersApi } from './api/window-mcp-servers.ts'
 
 export * from './api/agent-audit-types.ts'
 export * from './api/agent-trigger-types.ts'
@@ -93,6 +95,7 @@ declare global {
       WindowShellApi &
       WindowInstructionsApi &
       WindowWebhooksApi &
+      WindowMcpServersApi &
       WindowDeviceApi &
       WindowBrowserExtensionsApi &
       WindowVaultApi
@@ -120,6 +123,7 @@ const rawApi = {
   ...shellApi,
   ...instructionsApi,
   ...webhooksApi,
+  ...mcpServersApi,
   ...deviceApi,
   ...browserExtensionsApi,
   ...vaultApi,
