@@ -5,7 +5,6 @@ import { canUseAllowList } from '@/lib/byos/access'
 import { extractAwsAccountId } from '@/lib/byos/account'
 import { cachedAwsAccountAlias } from '@/lib/byos/aws'
 import { publicZeaburProviders } from '@/lib/byos/zeabur-provider-view'
-import { teamMcpServers } from '@/lib/mcp/team-servers'
 import { parseObjectId } from '@/lib/objectid'
 import { ownPersonalCredentialOptions } from '@/lib/personal-credentials/handout'
 import { teamByosBindings } from '@/models'
@@ -14,6 +13,7 @@ import {
   connectorCredentialOptions,
   connectorCredentialOptionsProjection,
   emptyConnectorCredentialOptions,
+  resolveMcpServerOptions,
 } from './credential-options-connectors'
 
 import type { AgentCredentialOptions } from './types'
@@ -262,20 +262,11 @@ export async function getAgentCredentialOptions(
       label: binding.label,
       permission: binding.permission,
     }))
-  const [devices, personalCredentials, mcpServerDocs] = await Promise.all([
+  const [devices, personalCredentials, mcpServers] = await Promise.all([
     resolveDeviceOptions(userId, teamId),
     ownPersonalCredentialOptions(userId, teamId),
-    teamMcpServers()
-      .find({ teamId }, { projection: { name: 1, url: 1 } })
-      .sort({ createdAt: 1 })
-      .toArray()
-      .catch(() => []),
+    resolveMcpServerOptions(teamId),
   ])
-  const mcpServers = mcpServerDocs.map((server) => ({
-    id: server._id.toHexString(),
-    name: server.name,
-    url: server.url,
-  }))
 
   return {
     awsRoles,
@@ -305,7 +296,3 @@ export async function getAgentCredentialOptions(
     ...connectorCredentialOptions(doc, userId),
   }
 }
-
-// The default access a conversation gets when the caller made no explicit
-// selection: everything the user may use. Resend is the one exception — see
-// below.

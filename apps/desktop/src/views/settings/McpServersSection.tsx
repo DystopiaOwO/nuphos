@@ -65,6 +65,39 @@ function McpServersList({
   )
 }
 
+function DeleteMcpServerDialog({
+  deleting,
+  onClose,
+  onConfirm,
+}: {
+  deleting: TeamMcpServer | null
+  onClose: () => void
+  onConfirm: (server: TeamMcpServer) => void
+}) {
+  return (
+    <ConfirmDialog
+      open={deleting !== null}
+      title={t('Delete MCP server?')}
+      description={
+        deleting
+          ? t('“{name}” will no longer be available to conversations in this team.', {
+              name: deleting.name,
+            })
+          : ''
+      }
+      confirmLabel={t('Delete')}
+      destructive
+      onClose={onClose}
+      onConfirm={() => {
+        const target = deleting
+
+        onClose()
+        if (target) onConfirm(target)
+      }}
+    />
+  )
+}
+
 export function McpServersSection({ team }: { team: AtlasTeam | undefined }) {
   const teamId = team?.id ?? ''
   const isAdmin = team?.role === 'ADMINISTRATOR'
@@ -75,7 +108,7 @@ export function McpServersSection({ team }: { team: AtlasTeam | undefined }) {
   const [busyId, setBusyId] = useState<string | null>(null)
   const refresh = () => {
     void queryClient.invalidateQueries({ queryKey: queryKeys.mcpServers(teamId) })
-    void queryClient.invalidateQueries({ queryKey: ['agent', 'credential-options'] })
+    void queryClient.invalidateQueries({ queryKey: queryKeys.credentialOptions(teamId) })
   }
 
   async function remove(server: TeamMcpServer) {
@@ -118,7 +151,7 @@ export function McpServersSection({ team }: { team: AtlasTeam | undefined }) {
           onRetry={() => void listing.refetch()}
         />
       )}
-      {listing.data && (
+      {isAdmin && listing.data && (
         <section>
           <McpServersList
             servers={servers}
@@ -132,25 +165,10 @@ export function McpServersSection({ team }: { team: AtlasTeam | undefined }) {
             onClose={() => setEditor(null)}
             onSubmit={submit}
           />
-          <ConfirmDialog
-            open={deleting !== null}
-            title={t('Delete MCP server?')}
-            description={
-              deleting
-                ? t('“{name}” will no longer be available to conversations in this team.', {
-                    name: deleting.name,
-                  })
-                : ''
-            }
-            confirmLabel={t('Delete')}
-            destructive
+          <DeleteMcpServerDialog
+            deleting={deleting}
             onClose={() => setDeleting(null)}
-            onConfirm={() => {
-              const target = deleting
-
-              setDeleting(null)
-              if (target) void remove(target)
-            }}
+            onConfirm={(target) => void remove(target)}
           />
         </section>
       )}
