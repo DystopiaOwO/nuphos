@@ -191,6 +191,7 @@ const EXTRA_MODULES: ModuleFactory[] = [
 export const ANTIGRAVITY_TOOLS: ReadonlySet<string> = new Set([
   'create_thread',
   'send_message_to_thread',
+  'archive_thread',
   'report_task',
   'update_self',
   'request_user_decision',

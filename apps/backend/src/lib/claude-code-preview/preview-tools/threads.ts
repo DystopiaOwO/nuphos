@@ -120,19 +120,12 @@ export function threadToolModule(
       {
         name: 'create_thread',
         description:
-          'Start a Nuphos sub-agent: a separate Nuphos conversation. Use it only when asked for a sub-agent or to delegate/background work. ' +
-          'It does not inherit your transcript. It always runs in the permission mode of the ' +
-          'conversation at the top of yours. It runs on your agent, or on the ' +
-          'one runtimeId names from list_agent_runtimes. ' +
-          'It uses the credentials and computers of the conversation at the top of yours, ' +
-          'always the same as yours, and changes when that selection changes. ' +
-          "model, effort and fast set its model picker before its first turn; its agent's defaults otherwise. " +
-          'Unless the person named a model for this work, choose them yourself from the models ' +
-          'list_agent_runtimes shows for its agent: a lighter, cheaper model for simple or mechanical ' +
-          'work, a stronger one for hard reasoning or risky changes. Say why in modelReason. ' +
-          'The current chat stays available. Specify a completion condition and ask the worker to use ' +
-          'report_task to report results or blockers. Supply requestId and reuse it with the same prompt on retries to avoid duplicate Tasks. Returns a Nuphos threadId (not a Codex internal ID). ' +
-          'Only available for conversations owned by the current actor.',
+          'Start a Nuphos sub-agent conversation to delegate or background work. ' +
+          "Does not inherit your transcript; inherits the top conversation's permission mode, credentials, and computers. " +
+          'Runs on your agent or runtimeId from list_agent_runtimes; model, effort, and fast set its first turn ' +
+          '(pick lighter models for simple work, stronger for complex or risky work, and explain in modelReason). ' +
+          'Give a completion condition and ask the worker to report via report_task. ' +
+          'Reuse requestId with the same prompt on retries. Returns a Nuphos threadId. Owner-only.',
         inputSchema: toolInputJsonSchema(create),
       },
       {
@@ -150,14 +143,9 @@ export function threadToolModule(
       {
         name: 'archive_thread',
         description:
-          'Archive a Nuphos conversation you own in this team, or restore it with archived=false. ' +
-          'Use when its work is done or the user asks; the current conversation counts too. ' +
-          'Archiving hides it but does not stop a running turn. ' +
-          'Its sub-agent threads, recursively, are archived and restored with it. ' +
-          'A human message, send_message_to_thread or a bound resource event restores it. ' +
-          'Archiving deletes its Triggers, and a Trigger fire never restores it. ' +
-          'Use threadId from create_thread or session_id from ' +
-          'list_recent_conversations.',
+          'Archive a Nuphos thread you own in this team, or restore it with archived=false. ' +
+          'Cascades to nested sub-agent threads and cleans up Triggers; does not stop a running turn. ' +
+          'Channels cannot be archived here.',
         inputSchema: toolInputJsonSchema(archive),
       },
       {

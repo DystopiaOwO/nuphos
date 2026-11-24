@@ -39,6 +39,7 @@ let source: AgentConversation
 let target: AgentConversation
 let member = true
 const archives: unknown[][] = []
+const cleaned: string[][] = []
 const claims: Parameters<TurnRunner['claimAgentRunOrEnqueue']>[0][] = []
 const shells: Parameters<typeof import('./db').upsertConversationShell>[0][] = []
 
@@ -57,6 +58,7 @@ beforeEach(() => {
   target = { ...source, sessionId: 'target' }
   member = true
   archives.length = 0
+  cleaned.length = 0
   claims.length = 0
   shells.length = 0
   bypass.clear()
@@ -78,7 +80,11 @@ afterEach(async () => {
     await clearPendingUserMessages('owner', id)
 })
 
-useArchiveCleanup({ cleanUpArchived: async () => {} })
+useArchiveCleanup({
+  cleanUpArchived: async (sessionIds) => {
+    cleaned.push(sessionIds)
+  },
+})
 useConversationChatRoute({
   resolveConversationChatRuntime: async () => ({ runtime: 'claude-code' }),
 })
@@ -662,19 +668,25 @@ describe('archive thread', () => {
       ['target', false],
       ['source', true],
     ])
+    expect(cleaned).toEqual([['target'], ['source']])
   })
-  test('rejects missing, foreign-owner and cross-team targets without a write', async () => {
+  test('rejects missing, foreign-owner, cross-team and channel targets without a write', async () => {
     await expect(setAgentThreadArchived(actor, 'missing', true)).rejects.toThrow('Target must')
     target.userId = 'other'
     await expect(setAgentThreadArchived(actor, 'target', true)).rejects.toThrow('Target must')
     target.userId = actor.userId
     target.teamId = 'other-team'
     await expect(setAgentThreadArchived(actor, 'target', false)).rejects.toThrow('Target must')
+    target.teamId = actor.teamId
+    target.kind = 'channel'
+    await expect(setAgentThreadArchived(actor, 'target', true)).rejects.toThrow('channel')
     expect(archives).toEqual([])
+    expect(cleaned).toEqual([])
   })
   test('rejects an actor who left the team', async () => {
     member = false
     await expect(setAgentThreadArchived(actor, 'target', true)).rejects.toThrow('still belong')
     expect(archives).toEqual([])
+    expect(cleaned).toEqual([])
   })
 })
