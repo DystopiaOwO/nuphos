@@ -49,18 +49,23 @@ export function CredentialSelectorSectionList({
   }
   const identityRow = (provider: 'github' | 'linear', providerSections: CredentialSection[]) => {
     if (!personal) return null
-
     if (providerSections.length === 0) return ownRow(provider)
+    const row = personalIdentityRow(provider, personal, value)
 
     return (
       <>
         {ownRow(provider)}
-        <PersonalIdentityItem
-          provider={provider}
-          personal={personal}
-          value={value}
-          onChange={onChange}
-        />
+        {row && (
+          <MenuCheckboxItem
+            checked={row.checked}
+            onCheckedChange={(checked) => onChange(setPersonalIdentity(value, provider, checked))}
+          >
+            <span className="flex min-w-0 items-center gap-2">
+              <CloudLogo provider={provider} size={14} />
+              <span className="min-w-0 flex-1 truncate text-[12.5px] text-main">{row.label}</span>
+            </span>
+          </MenuCheckboxItem>
+        )}
       </>
     )
   }
@@ -259,37 +264,13 @@ export function CredentialSelectorSectionList({
         newIds={unseen?.instaboxAccountIds}
         onChangeIds={(ids) => onChange({ ...value, instaboxAccountIds: ids })}
       />
+      <CredentialSectionGroup
+        sections={sections.mcpServerSections}
+        selectedIds={value.mcpServerIds}
+        newIds={unseen?.mcpServerIds}
+        onChangeIds={(ids) => onChange({ ...value, mcpServerIds: ids })}
+      />
       {GOOGLE_PROVIDERS.map(ownRow)}
     </>
-  )
-}
-
-// Whether the agent acts as the member or as the team on this provider. It sits under
-// the provider's bindings and counts like them.
-function PersonalIdentityItem({
-  provider,
-  personal,
-  value,
-  onChange,
-}: {
-  provider: PersonalCredentialProvider
-  personal: PersonalCredential[]
-  value: CredentialSelectorControl['value']
-  onChange: CredentialSelectorControl['onChange']
-}) {
-  const row = personalIdentityRow(provider, personal, value)
-
-  if (!row) return null
-
-  return (
-    <MenuCheckboxItem
-      checked={row.checked}
-      onCheckedChange={(checked) => onChange(setPersonalIdentity(value, provider, checked))}
-    >
-      <span className="flex min-w-0 items-center gap-2">
-        <CloudLogo provider={provider} size={14} />
-        <span className="min-w-0 flex-1 truncate text-[12.5px] text-main">{row.label}</span>
-      </span>
-    </MenuCheckboxItem>
   )
 }

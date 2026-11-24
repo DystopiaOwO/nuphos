@@ -1,4 +1,5 @@
 import { canUseAllowList } from '@/lib/byos/access'
+import { teamMcpServers } from '@/lib/mcp/team-servers'
 
 import type { AgentCredentialOptions } from './types'
 import type { TeamByosBindings } from '@/models'
@@ -154,4 +155,21 @@ export function connectorCredentialOptions(
     cloudflareAccounts,
     instaboxAccounts,
   }
+}
+
+export async function resolveMcpServerOptions(
+  teamId: string,
+): Promise<AgentCredentialOptions['mcpServers']> {
+  const docs = await teamMcpServers()
+    .find({ teamId }, { projection: { name: 1, url: 1 } })
+    .sort({ createdAt: 1 })
+    .toArray()
+    // Fall back to empty in DB-less unit tests or transient lookup failures so other options still load.
+    .catch(() => [])
+
+  return docs.map((server) => ({
+    id: server._id.toHexString(),
+    name: server.name,
+    url: server.url,
+  }))
 }

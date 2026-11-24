@@ -13,6 +13,7 @@ import {
   connectorCredentialOptions,
   connectorCredentialOptionsProjection,
   emptyConnectorCredentialOptions,
+  resolveMcpServerOptions,
 } from './credential-options-connectors'
 
 import type { AgentCredentialOptions } from './types'
@@ -68,6 +69,7 @@ export async function getAgentCredentialOptions(
       resendIntegrations: [],
       personalCredentials: [],
       devices: [],
+      mcpServers: [],
       ...emptyConnectorCredentialOptions(),
     }
   const teamObjectId = parseObjectId(teamId, 'teamId')
@@ -260,9 +262,10 @@ export async function getAgentCredentialOptions(
       label: binding.label,
       permission: binding.permission,
     }))
-  const [devices, personalCredentials] = await Promise.all([
+  const [devices, personalCredentials, mcpServers] = await Promise.all([
     resolveDeviceOptions(userId, teamId),
     ownPersonalCredentialOptions(userId, teamId),
+    resolveMcpServerOptions(teamId),
   ])
 
   return {
@@ -289,10 +292,7 @@ export async function getAgentCredentialOptions(
     resendIntegrations,
     personalCredentials,
     devices,
+    mcpServers,
     ...connectorCredentialOptions(doc, userId),
   }
 }
-
-// The default access a conversation gets when the caller made no explicit
-// selection: everything the user may use. Resend is the one exception — see
-// below.

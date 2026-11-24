@@ -143,7 +143,8 @@ export function hasCredentialOptions(options: AgentCredentialOptions): boolean {
       options.upstashAccounts.length +
       options.cloudflareAccounts.length +
       options.instaboxAccounts.length +
-      options.devices.length >
+      options.devices.length +
+      (options.mcpServers?.length ?? 0) >
     0
   )
 }

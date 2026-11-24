@@ -47,6 +47,7 @@ export function normalizeCredentialAccess(
     cloudflareAccountIds: value?.cloudflareAccountIds ?? [],
     instaboxAccountIds: value?.instaboxAccountIds ?? [],
     deviceIds: value?.deviceIds ?? [],
+    mcpServerIds: value?.mcpServerIds ?? [],
     ...teamIdentityOf(value),
   }
 }
@@ -89,6 +90,7 @@ export function normalizeCredentialOptions(
     instaboxAccounts: value?.instaboxAccounts ?? [],
     personalCredentials: value?.personalCredentials ?? [],
     devices: value?.devices ?? [],
+    mcpServers: value?.mcpServers ?? [],
   }
 }
 
@@ -131,6 +133,7 @@ export function credentialSelectionSignature(value: AgentCredentialSelection): s
     cloudflareAccountIds: sortedIds(value.cloudflareAccountIds),
     instaboxAccountIds: sortedIds(value.instaboxAccountIds),
     deviceIds: sortedIds(value.deviceIds),
+    mcpServerIds: sortedIds(value.mcpServerIds),
     teamIdentity: sortedIds(value.teamIdentity ?? []),
     personalCredentialIds: sortedIds(value.personalCredentialIds ?? []),
   })
@@ -193,23 +196,19 @@ export function allCredentialAccess(options: AgentCredentialOptions): AgentCrede
     cloudflareAccountIds: (options.cloudflareAccounts ?? []).map((account) => account.accountId),
     instaboxAccountIds: (options.instaboxAccounts ?? []).map((account) => account.accountId),
     deviceIds: (options.devices ?? []).map((device) => device.deviceId),
+    mcpServerIds: (options.mcpServers ?? []).map((server) => server.id),
     personalCredentialIds: (options.personalCredentials ?? []).map((own) => own.provider),
   }
 }
 
-// What a conversation starts with when the user hasn't chosen: everything they
-// may use, minus Resend. Mirrors `allCredentialAccessFromOptions` in the
-// backend's agent.ts — sending mail is irreversible and leaves the system, so a
-// Resend binding is enabled for a conversation on purpose or not at all. Keep
-// the two in step.
-//
-// Note this is deliberately NOT `allCredentialAccess` with a tweak: that one
-// means "every id that exists" and is what prune/select-all need.
+// Default access when the caller made no explicit selection: everything usable, minus opt-in
+// providers (Resend, Trello, custom MCP). Mirrors `allCredentialAccessFromOptions` in backend.
 export function defaultCredentialAccess(options: AgentCredentialOptions): AgentCredentialSelection {
   return {
     ...allCredentialAccess(options),
     resendIntegrationIds: [],
     trelloIntegrationIds: [],
+    mcpServerIds: [],
     deviceIds: usableDeviceIds(options.devices),
   }
 }
@@ -284,6 +283,7 @@ export function emptyCredentialAccess(): AgentCredentialSelection {
     cloudflareAccountIds: [],
     instaboxAccountIds: [],
     deviceIds: [],
+    mcpServerIds: [],
   }
 }
 
